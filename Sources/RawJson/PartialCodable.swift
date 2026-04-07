@@ -79,3 +79,5 @@ extension PartialCodable: Equatable where ConcreteType: Equatable {
     lhs.value == rhs.value && lhs.raw == rhs.raw
   }
 }
+
+extension PartialCodable: Sendable where ConcreteType: Sendable {}

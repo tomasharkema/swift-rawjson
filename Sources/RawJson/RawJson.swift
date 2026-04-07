@@ -21,7 +21,7 @@ import Foundation
 ///   print(dict
 /// }
 /// ```
-public enum RawJson: Codable, Equatable, Hashable {
+public enum RawJson: Codable, Equatable, Hashable, Sendable {
   case bool(Bool)
   case double(Double)
   case string(String)
@@ -49,7 +49,9 @@ public enum RawJson: Codable, Equatable, Hashable {
         if container.decodeNil() {
           self = .null
         } else {
-          throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "could not decode as nil"))
+          throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+              codingPath: decoder.codingPath, debugDescription: "could not decode as nil"))
         }
       }
     }
@@ -64,7 +66,9 @@ public enum RawJson: Codable, Equatable, Hashable {
         dict[key.stringValue] = .double(value)
       } else if let value = try? container.decode(String.self, forKey: key) {
         dict[key.stringValue] = .string(value)
-      } else if let value = try? container.nestedContainer(keyedBy: JSONCodingKeys.self, forKey: key) {
+      } else if let value = try? container.nestedContainer(
+        keyedBy: JSONCodingKeys.self, forKey: key)
+      {
         dict[key.stringValue] = try RawJson(from: value)
       } else if let value = try? container.nestedUnkeyedContainer(forKey: key) {
         dict[key.stringValue] = try RawJson(from: value)
@@ -72,7 +76,10 @@ public enum RawJson: Codable, Equatable, Hashable {
         if try container.decodeNil(forKey: key) {
           dict[key.stringValue] = .null
         } else {
-          throw DecodingError.typeMismatch(RawJson.self, DecodingError.Context(codingPath: container.codingPath, debugDescription: "could not encode as nil"))
+          throw DecodingError.typeMismatch(
+            RawJson.self,
+            DecodingError.Context(
+              codingPath: container.codingPath, debugDescription: "could not encode as nil"))
         }
       }
     }
@@ -97,7 +104,10 @@ public enum RawJson: Codable, Equatable, Hashable {
         if try container.decodeNil() {
           arr.append(.null)
         } else {
-          throw DecodingError.typeMismatch(RawJson.self, DecodingError.Context(codingPath: container.codingPath, debugDescription: "could not encode as nil"))
+          throw DecodingError.typeMismatch(
+            RawJson.self,
+            DecodingError.Context(
+              codingPath: container.codingPath, debugDescription: "could not encode as nil"))
         }
       }
     }
@@ -106,26 +116,26 @@ public enum RawJson: Codable, Equatable, Hashable {
 
   public func encode(to encoder: Encoder) throws {
     switch self {
-    case let .bool(value):
+    case .bool(let value):
       var container = encoder.singleValueContainer()
       try container.encode(value)
 
-    case let .double(value):
+    case .double(let value):
       var container = encoder.singleValueContainer()
       try container.encode(value)
 
-    case let .string(value):
+    case .string(let value):
       var container = encoder.singleValueContainer()
       try container.encode(value)
 
-    case let .array(value):
+    case .array(let value):
       var container = encoder.unkeyedContainer()
 
       for item in value {
         try container.encode(item)
       }
 
-    case let .dictionary(dict):
+    case .dictionary(let dict):
       var container = encoder.container(keyedBy: JSONCodingKeys.self)
 
       for (key, value) in dict {
